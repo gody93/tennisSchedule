@@ -1,17 +1,28 @@
-import requests
-import datetime
 import json
+import datetime
 import html
+import requests
 from bs4 import BeautifulSoup
 
+DAY_RANGE = 7
 
 def print_available_courts():
+    currentDate = datetime.datetime.today()
+    allCourts = {}
+    for day in range( 0, DAY_RANGE ):
+        date = currentDate + datetime.timedelta(days=day)
+        url = "https://clickandplay.bg/тенис-клуб-каратанчева--reservation-" + date.strftime('%d.%m.%Y') + "-189.html"
+        cells = get_hour_row(url)
+        allCourts += get_courts_from_table(cells)
 
-    currentDate = "28.03.2025"#datetime.datetime.today().strftime('%d.%m.%Y')
-    url = "https://clickandplay.bg/тенис-клуб-каратанчева--reservation-" + currentDate + "-189.html"
-    cells = get_hour_row(url)
-
-    print(get_courts_from_table(cells))
+    if allCourts.items() == 0:
+        print(f'No available courts in the next {DAYS_RANGE} days')
+    else:
+        for court in allCourts:
+            courtNum = court['court'][0:1]
+            courtHour = court['hour']
+            courtDate = court['date']
+            print(f"Court No. {courtNum} available on { courtDate } at { courtHour } ")
 
 def get_hour_row( url ):
     page = requests.get(url)
@@ -23,6 +34,7 @@ def get_hour_row( url ):
 
 def get_courts_from_table( cells ):
     availableCourts = {}
+    print("Geting Courts...")
     for cell in cells:
         for court in cell.find_all('div'):
             if court.has_attr('onclick'):
@@ -31,7 +43,7 @@ def get_courts_from_table( cells ):
                 jsonString = court['onclick'][startIndex:endIndex]
                 jsonString = html.unescape(jsonString)
                 data = json.loads(jsonString)
-                availableCourts[int(data['court'][0:1])] = [ data['date'], data['hour']]
+                availableCourts[int(data['court'][0:1])] = [data['date'], data['hour']]
 
     return availableCourts
 
