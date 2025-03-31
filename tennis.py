@@ -8,21 +8,20 @@ DAY_RANGE = 7
 
 def print_available_courts():
     currentDate = datetime.datetime.today()
-    allCourts = {}
+    allCourts = []
     for day in range( 0, DAY_RANGE ):
-        date = currentDate + datetime.timedelta(days=day)
-        url = "https://clickandplay.bg/тенис-клуб-каратанчева--reservation-" + date.strftime('%d.%m.%Y') + "-189.html"
+        date = (currentDate + datetime.timedelta(days=day)).strftime('%d.%m.%Y')
+        print(f"Geting Courts for { date }" )
+        url = "https://clickandplay.bg/тенис-клуб-каратанчева--reservation-" + date + "-189.html"
         cells = get_hour_row(url)
-        allCourts += get_courts_from_table(cells)
-
-    if allCourts.items() == 0:
-        print(f'No available courts in the next {DAYS_RANGE} days')
-    else:
-        for court in allCourts:
-            courtNum = court['court'][0:1]
-            courtHour = court['hour']
-            courtDate = court['date']
-            print(f"Court No. {courtNum} available on { courtDate } at { courtHour } ")
+        courts = get_courts_from_table(cells)
+        if( len(courts) > 0 ):
+            for court in courts:
+                courtNum = court[1]
+                courtHour = court[2]
+                print(f"Court No. {courtNum} available at { courtHour } ")
+        else:
+            print("No courts available!")
 
 def get_hour_row( url ):
     page = requests.get(url)
@@ -33,8 +32,7 @@ def get_hour_row( url ):
     return wantedRow.find_all('td')
 
 def get_courts_from_table( cells ):
-    availableCourts = {}
-    print("Geting Courts...")
+    availableCourts = []
     for cell in cells:
         for court in cell.find_all('div'):
             if court.has_attr('onclick'):
@@ -43,7 +41,7 @@ def get_courts_from_table( cells ):
                 jsonString = court['onclick'][startIndex:endIndex]
                 jsonString = html.unescape(jsonString)
                 data = json.loads(jsonString)
-                availableCourts[int(data['court'][0:1])] = [data['date'], data['hour']]
+                availableCourts.append( ( data['date'], int( data['court'][0:1] ), data['hour'] ) )
 
     return availableCourts
 
