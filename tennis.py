@@ -3,8 +3,12 @@ import datetime
 import html
 import requests
 from bs4 import BeautifulSoup
+import argparse
+
 
 DAY_RANGE = 7
+TIME_OFFSET = 6
+
 tennisClubs = {
     0 : ("https://clickandplay.bg/тенис-клуб-каратанчева--reservation-", "-189.html"),
     1 : ("https://clickandplay.bg/тк-1882--reservation-","-193.html"),
@@ -32,7 +36,7 @@ def get_hour_row( url, hour ):
     soup = BeautifulSoup(page.content, "html.parser")
     table = soup.find( 'table', attrs= { 'class': 'new-table-res day-graphic'} )
     tableRows = table.find_all('tr')
-    targetRow = hour - 6
+    targetRow = hour - TIME_OFFSET
     wantedRow = tableRows[targetRow]
     return wantedRow.find_all('td')
 
@@ -51,7 +55,23 @@ def get_courts_from_table( cells ):
 
     return availableCourts
 
+def list_clubs():
+    for key, value in tennisClubs.items():
+        startIndex = value[0].find("bg")
+        endIndex = value[0].find("r")
+        clubName = value[0][startIndex+3:endIndex]
+        print(f"Club name: { clubName.capitalize() } id: { key }")
+
+def add_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("hour", help="Desired hour to get available courts for - 7..22", action="store_true" )
+    parser.add_argument("court", help="Club from which to get available courts", action="store_true" )
+    parser.add_argument("-l","--list", help="List available clubs", action="store_true" )
+    return parser.parse_args()
 
 if __name__ == "__main__":
-    hour = 8
-    print_available_courts( hour )
+    args = add_arguments()
+    if args.list:
+        list_clubs()
+    else:
+        print_available_courts( hour = 8 )
