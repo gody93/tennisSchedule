@@ -5,30 +5,35 @@ import requests
 from bs4 import BeautifulSoup
 
 DAY_RANGE = 7
-
-def print_available_courts():
+tennisClubs = {
+    0 : ("https://clickandplay.bg/тенис-клуб-каратанчева--reservation-", "-189.html"),
+    1 : ("https://clickandplay.bg/тк-1882--reservation-","-193.html"),
+    2 : ("https://clickandplay.bg/360-тенис-клуб-бившият-бсфс--reservation-", "-100.html"),
+    3 : ("https://clickandplay.bg/софия-тех-спорт-reservation-","-208.html")
+}
+def print_available_courts( hour ):
     currentDate = datetime.datetime.today()
-    allCourts = []
     for day in range( 0, DAY_RANGE ):
         date = (currentDate + datetime.timedelta(days=day)).strftime('%d.%m.%Y')
-        print(f"Geting Courts for { date }" )
-        url = "https://clickandplay.bg/тенис-клуб-каратанчева--reservation-" + date + "-189.html"
-        cells = get_hour_row(url)
+        weekDay = datetime.datetime.strptime(date, '%d.%m.%Y').strftime('%A')
+        print(f"Geting Courts for { date } at { hour }:00 - { weekDay }" )
+        url = tennisClubs[0][0] + date + tennisClubs[0][1]
+        cells = get_hour_row(url, hour )
         courts = get_courts_from_table(cells)
         if( len(courts) > 0 ):
             for court in courts:
                 courtNum = court[1]
-                courtHour = court[2]
-                print(f"Court No. {courtNum} available at { courtHour } ")
+                print(f"Court No. {courtNum} available ")
         else:
             print("No courts available!")
 
-def get_hour_row( url ):
+def get_hour_row( url, hour ):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     table = soup.find( 'table', attrs= { 'class': 'new-table-res day-graphic'} )
     tableRows = table.find_all('tr')
-    wantedRow = tableRows[2]
+    targetRow = hour - 6
+    wantedRow = tableRows[targetRow]
     return wantedRow.find_all('td')
 
 def get_courts_from_table( cells ):
@@ -41,10 +46,12 @@ def get_courts_from_table( cells ):
                 jsonString = court['onclick'][startIndex:endIndex]
                 jsonString = html.unescape(jsonString)
                 data = json.loads(jsonString)
-                availableCourts.append( ( data['date'], int( data['court'][0:1] ), data['hour'] ) )
+                courtNumber = data['court'][0:1] if data['court'][0:1].isdigit() else data['court']
+                availableCourts.append( ( data['date'], courtNumber , data['hour'] ) )
 
     return availableCourts
 
 
 if __name__ == "__main__":
-    print_available_courts()
+    hour = 8
+    print_available_courts( hour )
