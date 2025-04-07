@@ -15,13 +15,13 @@ tennisClubs = {
     2 : ("https://clickandplay.bg/360-тенис-клуб-бившият-бсфс--reservation-", "-100.html"),
     3 : ("https://clickandplay.bg/софия-тех-спорт-reservation-","-208.html")
 }
-def print_available_courts( hour ):
+def print_available_courts( hour, clubId ):
     currentDate = datetime.datetime.today()
     for day in range( 0, DAY_RANGE ):
         date = (currentDate + datetime.timedelta(days=day)).strftime('%d.%m.%Y')
         weekDay = datetime.datetime.strptime(date, '%d.%m.%Y').strftime('%A')
         print(f"Geting Courts for { date } at { hour }:00 - { weekDay }" )
-        url = tennisClubs[0][0] + date + tennisClubs[0][1]
+        url = tennisClubs[clubId][0] + date + tennisClubs[clubId][1]
         cells = get_hour_row(url, hour )
         courts = get_courts_from_table(cells)
         if( len(courts) > 0 ):
@@ -60,18 +60,27 @@ def list_clubs():
         startIndex = value[0].find("bg")
         endIndex = value[0].find("r")
         clubName = value[0][startIndex+3:endIndex]
-        print(f"Club name: { clubName.capitalize() } id: { key }")
+        print(f"ID: { key }, { clubName.title().replace('-',' ') } ")
 
 def add_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("hour", help="Desired hour to get available courts for - 7..22", action="store_true" )
-    parser.add_argument("court", help="Club from which to get available courts", action="store_true" )
+    parser.add_argument("hour", type=int, nargs="?", help="Desired hour to get available courts for - 7..22", default=8)
+    parser.add_argument("id", type=int, nargs="?", help="Club from which to get available courts", default=0)
     parser.add_argument("-l","--list", help="List available clubs", action="store_true" )
     return parser.parse_args()
+
+def extract_club_name( clubId ):
+    startIndex = tennisClubs[clubId][0].find("bg")
+    endIndex = tennisClubs[clubId][0].find("r")
+    clubName = tennisClubs[clubId][0][startIndex+3:endIndex]
+    return clubName.title().replace('-',' ')
 
 if __name__ == "__main__":
     args = add_arguments()
     if args.list:
         list_clubs()
     else:
-        print_available_courts( hour = 8 )
+        hour = args.hour
+        clubId = args.id
+        print(extract_club_name(clubId))
+        print_available_courts( hour, clubId )
