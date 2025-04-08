@@ -20,25 +20,33 @@ def print_available_courts( hour, clubId ):
     for day in range( 0, DAY_RANGE ):
         date = (currentDate + datetime.timedelta(days=day)).strftime('%d.%m.%Y')
         weekDay = datetime.datetime.strptime(date, '%d.%m.%Y').strftime('%A')
-        print(f"Geting Courts for { date } at { hour }:00 - { weekDay }" )
         url = tennisClubs[clubId][0] + date + tennisClubs[clubId][1]
         cells = get_hour_row(url, hour )
+        if cells == None:
+            print("Club doesnt work in given hour!")
+            return
+
         courts = get_courts_from_table(cells)
         if( len(courts) > 0 ):
             for court in courts:
                 courtNum = court[1]
-                print(f"Court No. {courtNum} available ")
-        else:
-            print("No courts available!")
+                if( args.hour ):
+                    print(f"Court No. {courtNum} available for { date } at { hour:02d}:00 - { weekDay } ")
+            print("---------------------")
 
 def get_hour_row( url, hour ):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     table = soup.find( 'table', attrs= { 'class': 'new-table-res day-graphic'} )
     tableRows = table.find_all('tr')
-    targetRow = hour - TIME_OFFSET
-    wantedRow = tableRows[targetRow]
-    return wantedRow.find_all('td')
+    for hourRow in tableRows[1:]:
+        timeStamp = hourRow.find('th', attrs = {'class': 'headcol td-hours'}).find('div').get('rel')
+        timeStr = f"{hour:02d}:00"
+        if timeStr == timeStamp:
+            wantedRow = tableRows[hour - TIME_OFFSET]
+            return wantedRow.find_all('td')
+
+    return None
 
 def get_courts_from_table( cells ):
     availableCourts = []
