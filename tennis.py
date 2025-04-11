@@ -7,13 +7,14 @@ import argparse
 
 
 DAY_RANGE = 7
-TIME_OFFSET = 6
 
 tennisClubs = {
     0 : ("https://clickandplay.bg/тенис-клуб-каратанчева--reservation-", "-189.html"),
     1 : ("https://clickandplay.bg/тк-1882--reservation-","-193.html"),
     2 : ("https://clickandplay.bg/360-тенис-клуб-бившият-бсфс--reservation-", "-100.html"),
-    3 : ("https://clickandplay.bg/софия-тех-спорт-reservation-","-208.html")
+    3 : ("https://clickandplay.bg/софия-тех-спорт-reservation-","-208.html"),
+    4 : ("https://clickandplay.bg/15-40-reservation-","-5.html"),
+    5 : ("https://clickandplay.bg/бароккоспорт-reservation-", "-15.html")
 }
 def print_available_courts( hour, clubId ):
     currentDate = datetime.datetime.today()
@@ -43,8 +44,7 @@ def get_hour_row( url, hour ):
         timeStamp = hourRow.find('th', attrs = {'class': 'headcol td-hours'}).find('div').get('rel')
         timeStr = f"{hour:02d}:00"
         if timeStr == timeStamp:
-            wantedRow = tableRows[hour - TIME_OFFSET]
-            return wantedRow.find_all('td')
+            return hourRow.find_all('td')
 
     return None
 
