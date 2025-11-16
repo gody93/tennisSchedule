@@ -16,7 +16,8 @@ tennisClubs = {
     4 : ("https://clickandplay.bg/15-40-reservation-","-5.html"),
     5 : ("https://clickandplay.bg/бароккоспорт-reservation-", "-15.html"),
     6 : ("https://clickandplay.bg/тк-хепи-уин-1-славия--reservation-", "-142.html"),
-    7 : ("https://clickandplay.bg/тк-хепи-уин-2-славия-балон-❗%EF%B8%8F-reservation-", "-201.html")
+    7 : ("https://clickandplay.bg/тк-хепи-уин-2-славия-балон-❗%EF%B8%8F-reservation-", "-201.html"),
+    8 : ("https://clickandplay.bg/амик-спорт-reservation-","-140.html")
 }
 def print_available_courts( hour, clubId ):
     currentDate = datetime.datetime.today()
